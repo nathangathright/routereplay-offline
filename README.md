@@ -8,13 +8,13 @@ ORD → SFO → AKL · 18 seconds · 1080 × 1920 · silent. Route, altitude and
 
 https://github.com/user-attachments/assets/79262c00-d3f3-47af-9faf-2051da8a9bdd
 
-Rendered from [f34b87e](https://github.com/nathangathright/routereplay/commit/f34b87ed400ee926886d9ab879da407c9dfdd97d) at delivery quality with adaptive cloud/atmosphere reconstruction and modeled aircraft motion.
+Rendered from [f34b87e](https://github.com/nathangathright/routereplay-offline/commit/f34b87ed400ee926886d9ab879da407c9dfdd97d) at delivery quality with adaptive cloud/atmosphere reconstruction and modeled aircraft motion.
 
 The renderer combines a north-up globe, terrain relief, dated Sun/stars/Moon, causal modeled city lighting, wind-advected clouds, atmospheric scattering and aircraft rendered in Blender Cycles. Scene layers share linear light and camera depth before a single exposure and tone mapper. The final video is display-referred H.264. Historical textures, reconstructed weather and artistic scale choices are identified in its provenance.
 
 ## Use the skill
 
-Clone `https://github.com/nathangathright/routereplay.git`, then copy `skills/route-replay` into your agent's skills directory, or point a skill installer at this repository. The folder includes the runtime and references; it does not depend on a parent checkout. Ask: “Use $route-replay to make a globe reel from this itinerary.”
+Clone `https://github.com/nathangathright/routereplay-offline.git`, then copy `skills/route-replay` into your agent's skills directory, or point a skill installer at this repository. The folder includes the runtime and references; it does not depend on a parent checkout. Ask: “Use $route-replay to make a globe reel from this itinerary.”
 
 For direct use, install Python 3.10+, Blender, FFmpeg and ffprobe, then install the Python dependencies in your preferred virtual environment:
 

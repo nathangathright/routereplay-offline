@@ -18,13 +18,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 12208,
-      "sha256": "a0ca5d1a731153672e61e0f6a7f9168c496a7ddfd44fafb5bc7bae072eaf1881"
+      "bytes": 12224,
+      "sha256": "52d940f32c14a4faa6dbf754c858dacf6cb44eeb9cab5c991071bf00a7622136"
     },
     {
       "path": "package.json",
-      "bytes": 583,
-      "sha256": "094451ca774d58ec5abb204abc57a013b68c89a2a5be811311561cc964d02ce0"
+      "bytes": 591,
+      "sha256": "7fc38c38b1efb93d3c097a95b2507aa662848a1e9138bdec84ddf2f0697ff092"
     },
     {
       "path": "skills/route-replay/SKILL.md",
