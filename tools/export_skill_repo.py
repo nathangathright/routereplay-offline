@@ -21,7 +21,7 @@ EXCLUDED_DIRS = {
 }
 EXCLUDED_SUFFIXES = {".pyc", ".pyo"}
 ROOT_FILES = (
-    "README.md", "LICENSE", "package.json", ".gitattributes", "tools/export_skill_repo.py",
+    "README.md", "LICENSE", "package.json", ".gitattributes", ".gitignore", "tools/export_skill_repo.py",
     "tools/list_skills.py", "tools/test_portable.py", ".github/workflows/validate.yml",
     "tests/test_trip.py", "tests/test_data.py", "tests/test_engine.py",
     "tests/test_radiometry.py", "tests/test_transport.py", "tests/test_causal_lights.py",
@@ -40,6 +40,7 @@ ROOT_FILES = (
     "tests/test_chase_camera.py", "tests/test_chase_weather.py", "tests/test_chase_preview.py",
     "tests/test_chase_atmosphere.py", "tests/test_chase_cloudscape.py", "tests/test_chase_cloud_grid.py",
     "tests/test_aircraft_attitude.py", "tests/test_pacing.py", "tests/test_media_moments.py", "tests/test_storytelling.py",
+    "tests/test_layover_presentation.py", "tests/test_boeing_737.py", "tests/test_aircraft_night.py",
     "tests/test_track_imports.py", "tests/test_telemetry.py", "tests/test_telemetry_overlay.py", "tests/test_track_workflow.py",
 )
 PRIVATE_PATTERNS = (
@@ -63,97 +64,6 @@ MEDIA_SUFFIXES = {
 }
 BUNDLED_BINARY_FILES = {(SKILL / 'assets/fonts/dosis/Dosis-Variable.ttf').as_posix()}
 PRIVATE_DIRS = {'.local', '.ssh', '.aws', '.config', 'private', 'trips', 'tracks', 'bookings'}
-PORTABLE_IGNORE = '''# Local runtime and generated output
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-.pytest_cache/
-.DS_Store
-node_modules/
-/.local/
-/data/
-/cache/
-/caches/
-/renders/
-/outputs/
-/reports/
-/previews/
-/dist/
-
-# Personal trips, evidence and local preview sites
-/private/
-/trips/
-/tracks/
-/bookings/
-/trip*.json
-/itinerary*.json
-/booked-itinerary.json
-/flight-evidence.json
-/preview-site/
-/outbound/
-/return/
-/preserved-outbound*/
-/asset-manifest.json
-
-# Credentials and machine settings
-.env
-.env.*
-.cdsapirc
-.netrc
-.pypirc
-.npmrc
-.ssh/
-.aws/
-.config/
-credentials*.json
-secrets*.json
-secrets*.yaml
-secrets*.yml
-*.pem
-*.key
-*.p12
-*.pfx
-
-# Media, downloaded data, models and track recordings
-*.mp4
-*.mov
-*.m4v
-*.webm
-*.avi
-*.mkv
-*.mp3
-*.wav
-*.m4a
-*.png
-*.jpg
-*.jpeg
-*.heic
-*.webp
-*.gif
-*.tif
-*.tiff
-*.exr
-*.hdr
-*.blend
-*.blend1
-*.glb
-*.gltf
-*.fbx
-*.npz
-*.npy
-*.nc
-*.grib
-*.grib2
-*.zip
-*.gz
-*.7z
-*.pdf
-*.gpx
-*.kml
-*.kmz
-*.igc
-'''
 
 
 def tracked_files(root: Path, allowed_sources: list[Path]) -> list[Path]:
@@ -162,12 +72,10 @@ def tracked_files(root: Path, allowed_sources: list[Path]) -> list[Path]:
                             check=True, capture_output=True).stdout
     names = [os.fsdecode(name) for name in output.split(b'\0') if name]
     allowed = {p.relative_to(root).as_posix() for p in allowed_sources}
-    allowed.update({'.gitignore', 'distribution-manifest.json'})
+    allowed.add('distribution-manifest.json')
     unexpected = sorted(set(names) - allowed)
     if unexpected:
         raise ValueError('Files outside the public allowlist:\n' + '\n'.join(unexpected))
-    if (root / '.gitignore').read_text() != PORTABLE_IGNORE:
-        raise ValueError('.gitignore must match the portable ignore rules')
     return [root / name for name in names]
 
 
@@ -252,9 +160,6 @@ def export(root: Path, destination: Path, files: list[Path], entries: list[dict[
             target = staging / source.relative_to(root)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
-        (staging/'.gitignore').write_text(PORTABLE_IGNORE)
-        entries = entries + [{'path': '.gitignore', 'bytes': len(PORTABLE_IGNORE.encode()),
-                              'sha256': hashlib.sha256(PORTABLE_IGNORE.encode()).hexdigest()}]
         manifest = {"schema_version": 1, "files": entries}
         (staging / "distribution-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
         if destination.exists():

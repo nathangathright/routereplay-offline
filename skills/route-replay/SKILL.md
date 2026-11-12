@@ -11,7 +11,7 @@ For an experimental third-person aircraft shot, read [chase-camera.md](reference
 
 ## Prepare the trip
 
-Read [trip-format.md](references/trip-format.md) and start from an appropriate JSON in `examples/`. Gather airport coordinates, IANA time zones, departure/arrival dates and offsets, and aircraft types. Preserve booking facts separately from current published schedules. Do not infer a registration or claim a live aircraft assignment from a model name. The bundled dimensional illustrations support A321neo, 777-200ER, 787-9 and 757-300; adding another type requires geometry and validation.
+Read [trip-format.md](references/trip-format.md) and start from an appropriate JSON in `examples/`. Gather airport coordinates, IANA time zones, departure/arrival dates and offsets, and aircraft types. Preserve booking facts separately from current published schedules. Do not infer a registration or claim a live aircraft assignment from a model name. The bundled dimensional illustrations support A321neo, 737-900ER, 777-200ER, 787-9 and 757-300. For an unmodeled type needed by a requested trip, implement and validate an original dimensional illustration from reputable specifications or use an authorized attributed local asset. Do not silently substitute another aircraft; surface a genuine blocker if a faithful model cannot be prepared.
 
 Run these commands with the real skill path in place of `$SKILL_DIR`:
 
@@ -58,6 +58,8 @@ For optional Cycles Metal, MLX air/cloud light-path integration or VideoToolbox 
 
 Inspect the contact sheet before a full encode: route order, north-up orientation, airport proximity and unambiguous leader lines, stable label placement, transitions at every stop, unequal zoom apexes, night/day, cloud/aircraft occlusion and phone-scale contrast. Generated label slots are a starting layout; unusual routes may require a layout algorithm improvement. Do not ship a visually confusing result merely because numeric checks pass.
 
+Follow [continuous stops and restrained HUD](references/presentation-contract.md): animate the full layover clock, verify changing Sun/weather across consecutive stop frames, and keep unrequested title/disclaimer banners out of the film.
+
 The current cinematic preset keeps the plane centered, scales zoom by relative route distance, and recedes departed labels with the ground. By default, split-flap airport codes are the only on-screen text; telemetry adds a compact readout near the top when enabled. These are configurable creative defaults, not restrictions on future user requests. The implementation currently renders at 1080×1920; changing aspect ratio requires coordinating every layer.
 
 Deliver the MP4 with `provenance.json` and `verification.json`; retain `frame-contexts.json`, `prepass.json` and `performance.json` for traceability. Explain which weather mode was used and any material data gaps. The encode includes descriptive metadata without adding on-screen text. No music is bundled; platform music availability and licensing are separate from video generation.
@@ -77,4 +79,4 @@ Keep improvements deployable as an individual skill: local files, explicit acqui
 - For dated aerosol, snow/sea-ice, ERA5 or geographic GeoTIFF inputs, read [data-adapters.md](references/data-adapters.md). Prepare explicitly with `scripts/data_adapters.py` or `scripts/era5_import.py`; attach products with `scripts/data.py`. Preserve dates, units, source/license and conversion assumptions. Environment products follow the weather clock, including explicit replay.
 - For supplied survey controls, procedural aircraft materials or lamp-measurement uncertainty, read [calibration.md](references/calibration.md). Never label a modeled footprint or artistic material as measured.
 - Before a costly export, use `flight_video.py budget` with the intended quality, transport, aircraft, device and workers. Read [render-budgets.md](references/render-budgets.md); report its range and unmeasured costs, and reuse the compatible cache. `--estimate-only` reads an existing exact configuration.
-- Moonlight includes camera-visible air scattering, a bounded local land bounce and nearby terrain shadow sampling. See [moonlight.md](references/moonlight.md) for the physical and cinematic conventions.
+- Moonlight includes camera-visible air scattering, a bounded local land bounce and nearby terrain shadow sampling. See [moonlight.md](references/moonlight.md) for the physical and cinematic conventions. For a requested readable aircraft at night without brightening the rest of the scene, use the opt-in [aircraft-only cinematic light](references/aircraft-night-light.md) and compare matched night/day frames.

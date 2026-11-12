@@ -21,6 +21,7 @@ SCRIPTS = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS / 'engine'))
 from data import validate_bundle, bundle_fingerprint
 from trip import load_trip
+from aircraft_assets import AIRCRAFT_LENGTHS_M
 from astronomy import sun_direction
 from motion import Motion, basis
 from solar_visibility import solar_visibility
@@ -107,6 +108,10 @@ def prepare(args):
     from chase_camera import ChaseConfig, ChaseCamera
     from chase_weather import bake_atlas, configure_runtime
     trip = load_trip(args.trip.resolve())
+    if trip.style['aircraft_night_light'] > 0:
+        raise ValueError('style.aircraft_night_light is supported only by the globe renderer; '
+                         'set it to 0 for chase preview. Aircraft-only lighting is not supported '
+                         'in the shared chase scene.')
     if not 1 <= args.flight <= len(trip.legs):
         raise ValueError('Flight index is outside the itinerary')
     if args.exposure is None:
@@ -153,9 +158,9 @@ def prepare(args):
     altitude = float(state['altitude_m'])
     if not 1500 <= altitude <= 15_000:
         raise ValueError('Choose an airborne instant between 1,500 and 15,000 m for this prototype')
-    if leg.aircraft not in ('a321neo', '777-200er', '787-9', '757-300'):
+    if leg.aircraft not in AIRCRAFT_LENGTHS_M:
         raise ValueError('The experimental scene needs a supported dimensional airliner')
-    length = {'a321neo':44.51, '777-200er':63.73, '787-9':62.81, '757-300':54.43}[leg.aircraft]
+    length = AIRCRAFT_LENGTHS_M[leg.aircraft]
     speed = 230.
     # A local modeled rollout, deliberately independent of noisy measured heading.
     config = ChaseConfig(origin_lat_deg=lat, origin_lon_deg=lon, altitude_m=altitude,

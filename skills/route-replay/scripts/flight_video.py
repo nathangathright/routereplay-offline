@@ -23,13 +23,7 @@ SCRIPTS = Path(__file__).resolve().parent
 ENGINE = SCRIPTS / 'engine'
 sys.path.insert(0, str(ENGINE))
 from trip import load_trip, trip_from_dict
-
-
-def write_json(path, data):
-    path = Path(path)
-    temporary = path.with_name(path.name+'.tmp')
-    temporary.write_text(json.dumps(data, indent=2, allow_nan=False)+'\n')
-    temporary.replace(path)
+from data import write_json
 
 
 def executable(name):
@@ -235,6 +229,8 @@ def configure(args, trip, bundle):
             provenance['limitations'].append('Cloud lighting uses a finite four-term scattering approximation and three clear-sky directions attenuated by the cloud field; not a full angular multiple-scattering solve. Sky excludes below-horizontal atmosphere and neighboring-cloud bounce.')
         if trip.style['cloud_morphology'] and trip.weather['mode']!='clear':
             provenance['limitations'].append('Cellular billows use half-degree material maps and two smoothly renewed wind charts with at most four hours of history. Shapes, lifetime and coverage carving are modeled; sparse-cloud carving can reduce reconstructed optical mass and does not normalize each column.')
+        if trip.style['aircraft_night_light']>0:
+            provenance['limitations'].append(f"Aircraft-only cinematic key/fill strength {trip.style['aircraft_night_light']:g}; dated lunar direction blends to an explicitly artificial upper-side key when the Moon is dark or low. Smooth twilight fade; no change to globe, atmospheric/cloud sources, density, camera or exposure. Not measured illumination.")
         if trip.style['moonlight']>0:
             provenance['limitations'].append(f"Shared cloud, terrain, ocean and Cycles aircraft moonlight uses the physical-UTC lunar ephemeris, nonlinear phase brightness, distance, local horizon and approximate eclipse attenuation; lunar flux is multiplied by {trip.style['moonlight']:g} for presentation. Direct surface/aircraft light is attenuated by shared air/cloud density; their legacy night fill is reduced to 20%. Lunar air scattering uses the shared geometry and attenuation. Surface bounce uses a bounded local same-albedo closure; terrain shadows sample 16 distances within 50 km and may miss thin/distant ridges. Earthshine, red eclipse glow, refraction and measured lunar spectrum are not modeled. Ocean roughness is an artistic constant.")
         if trip.style['cloud_city_glow']>0 and trip.weather['mode']!='clear':
@@ -296,6 +292,7 @@ def lighting_samples(trip, terrain=None, *, frames=None):
                         'moon_rgb':incident[0].tolist(),
                         'moon_angular_diameter':float(2*lunar.angular_radius[0]),
                         'moonlight_enabled':trip.style['moonlight']>0,
+                        'aircraft_night_light':trip.style['aircraft_night_light'],
                         'illustrative_altitude_m':ctx.aircraft_altitude_m,
                         'aircraft_altitude_m':ctx.aircraft_altitude_m,
                         'rendered_altitude_m':ctx.rendered_altitude_m,

@@ -12,14 +12,19 @@
       "sha256": "c0b05b5c4e721e31d6fcff5aab6bc30c527db86b704c0a38ffe0e0c4442ffc24"
     },
     {
+      "path": ".gitignore",
+      "bytes": 907,
+      "sha256": "438bdca31bc4101b7165c9f8745ff529bc6f8314ac8d8581fee565d92de4d386"
+    },
+    {
       "path": "LICENSE",
       "bytes": 1324,
       "sha256": "c0319d11ce07c32cdb62636787b5681857e74247d7e540d5072021485abe8595"
     },
     {
       "path": "README.md",
-      "bytes": 12224,
-      "sha256": "52d940f32c14a4faa6dbf754c858dacf6cb44eeb9cab5c991071bf00a7622136"
+      "bytes": 12891,
+      "sha256": "3d599428316f20b0e90c12288dc0af5fd93578bf2f42b4577d412470ea2d4cfa"
     },
     {
       "path": "package.json",
@@ -28,8 +33,8 @@
     },
     {
       "path": "skills/route-replay/SKILL.md",
-      "bytes": 11765,
-      "sha256": "b295fd1a7d48fec11fee4b2fb58f7f617b3da7426f6b22a45cfd3851591518bb"
+      "bytes": 12464,
+      "sha256": "5154f14876fc4197246063909940df821e6a72a122ed30a06aeb85680969362f"
     },
     {
       "path": "skills/route-replay/agents/openai.yaml",
@@ -92,14 +97,24 @@
       "sha256": "7fba1a92c6c6bc926034923c43b4a5d64686951bbe0c59d9ab14bbc88a165af0"
     },
     {
+      "path": "skills/route-replay/references/aircraft-night-light.md",
+      "bytes": 3252,
+      "sha256": "59ae898f5ad8b7d9834127edad7207aabf57da72d58a5e586ee7cb0d09f79598"
+    },
+    {
       "path": "skills/route-replay/references/architecture.md",
-      "bytes": 19254,
-      "sha256": "bcf331b3eca29ada33fa38c2ed5336628d03dddc83067b0621c7895022b621b4"
+      "bytes": 19121,
+      "sha256": "9f1bbd00efe12646ea5dcdc525bc72adc532f63d9be3cb1d0f92529ec7ab0e54"
     },
     {
       "path": "skills/route-replay/references/birdseye-performance.md",
       "bytes": 9375,
       "sha256": "6b4b45ebab0e19c051c026b9b400d26109bcf2d9936f96bea2ba05cf707877a6"
+    },
+    {
+      "path": "skills/route-replay/references/boeing-737-900er.md",
+      "bytes": 2674,
+      "sha256": "057f8b9e3fac6ce34e60fd16c838020996e413a79d4c543793c689172a981a10"
     },
     {
       "path": "skills/route-replay/references/calibration.md",
@@ -108,8 +123,8 @@
     },
     {
       "path": "skills/route-replay/references/chase-camera.md",
-      "bytes": 11665,
-      "sha256": "c71b759ecee8befb6a90892b8cd3b446200d1e575d0f91927bbc05cdeb4172f5"
+      "bytes": 11963,
+      "sha256": "93d26ce2189365a9ef3e04454139e2571078e1d9c431df75f189747a8cb03a13"
     },
     {
       "path": "skills/route-replay/references/cloud-lighting.md",
@@ -197,6 +212,11 @@
       "sha256": "1eb0c6f629aad09c12f6e7587eeb9b935d198855d92aa0b485564c5397e9a034"
     },
     {
+      "path": "skills/route-replay/references/presentation-contract.md",
+      "bytes": 2817,
+      "sha256": "e86b01fdcdbc24279ec24b31b2447c9bf8d48084563f6da4c8c22f2fabaa4c9f"
+    },
+    {
       "path": "skills/route-replay/references/realism-roadmap.md",
       "bytes": 14416,
       "sha256": "8c19bf4bc6177bcdd3f1ce26283cfd5e49f410f8c68ed7c9ceaa80ce50a1ed25"
@@ -218,8 +238,8 @@
     },
     {
       "path": "skills/route-replay/references/trip-format.md",
-      "bytes": 16958,
-      "sha256": "97af1b9e765118b46eaf78c7180c274c85607f0249a7c8567d5eb0d7c8513d8e"
+      "bytes": 17204,
+      "sha256": "c1406ce377174262aa917a9e8832c70644b8db788f26e88ba29bdfbbd90c2ae1"
     },
     {
       "path": "skills/route-replay/references/volume-reconstruction.md",
@@ -233,13 +253,13 @@
     },
     {
       "path": "skills/route-replay/scripts/aircraft_assets.py",
-      "bytes": 16177,
-      "sha256": "5a0a4196e967a1f81fbb94e57df3b93544824f7379472bdcc63b82da4856c660"
+      "bytes": 19519,
+      "sha256": "cae5dd49c426e584433b037be9dd0cec877ae5fee5243d3fbaceee82ef8c9dbb"
     },
     {
       "path": "skills/route-replay/scripts/calibration.py",
-      "bytes": 8130,
-      "sha256": "7f6735ed69ec4097a0ad72fab86f4d5fe99203ac5970b07da4937324109806f1"
+      "bytes": 8158,
+      "sha256": "d71c200402cd46ea3c8f5216fe0152f344a4150f08fbc612fe6ed3f54325d36b"
     },
     {
       "path": "skills/route-replay/scripts/chase_cloudscape.py",
@@ -248,8 +268,8 @@
     },
     {
       "path": "skills/route-replay/scripts/chase_preview.py",
-      "bytes": 16261,
-      "sha256": "40bdb68eeb9459907e5e7a0e303b7a89d0d9a7cac5f93ff97a1a1d01d4ce891b"
+      "bytes": 16529,
+      "sha256": "e2c61f08e7dfb4069fde68ce4da20ac704b97dd9917778c3262640338a695ab5"
     },
     {
       "path": "skills/route-replay/scripts/chase_weather.py",
@@ -273,13 +293,18 @@
     },
     {
       "path": "skills/route-replay/scripts/engine/aircraft.py",
-      "bytes": 11786,
-      "sha256": "bf5accc1ede1e258635f65c0e8dccb26b1db8da9f76bd34665054729dfa30ee4"
+      "bytes": 11355,
+      "sha256": "817213d876364ced9ed7af8f8764929945e506628277b27f48671e9ffaa068ae"
     },
     {
       "path": "skills/route-replay/scripts/engine/aircraft_blender.py",
-      "bytes": 70769,
-      "sha256": "34b5adda91f313fee277c795e1dc7ef3c223e199856171e22796b4702090b3dc"
+      "bytes": 79044,
+      "sha256": "09bf43041b5b6b86904f5dc7786f72ca2e5b4be429bd8026dd7e7b2930974b33"
+    },
+    {
+      "path": "skills/route-replay/scripts/engine/aircraft_night.py",
+      "bytes": 1806,
+      "sha256": "0a911ff1014e25d0ae68f1dafc569e5a2346d7ff7bbc94a1f60e6cd94ee89bdf"
     },
     {
       "path": "skills/route-replay/scripts/engine/astronomy.py",
@@ -288,8 +313,8 @@
     },
     {
       "path": "skills/route-replay/scripts/engine/atmosphere.py",
-      "bytes": 16719,
-      "sha256": "5b6aca83a994fb90bf5f60722adc6c0c58afa67565e7befbe8eee3e04b40791e"
+      "bytes": 16312,
+      "sha256": "30d1a5f8e96139f4e1c28b4978f3ade68544cc0b3b7743950e9174a615f79a89"
     },
     {
       "path": "skills/route-replay/scripts/engine/atmosphere_lookup.py",
@@ -308,8 +333,8 @@
     },
     {
       "path": "skills/route-replay/scripts/engine/celestial.py",
-      "bytes": 7388,
-      "sha256": "0f1f27caca868a842c078d58561b9b9164fcd64c6083c4d453a6d29e87f2102f"
+      "bytes": 6891,
+      "sha256": "5a5d53e2e8c0bb3276ca30e8b16a582b0642e52a93f8ef6d2be3da7033aeea45"
     },
     {
       "path": "skills/route-replay/scripts/engine/chase_atmosphere.py",
@@ -373,8 +398,8 @@
     },
     {
       "path": "skills/route-replay/scripts/engine/cloudvolume.py",
-      "bytes": 35603,
-      "sha256": "d1c36efb2119c4b5e9f4c9c9a65df37b10579dd8130832de9e1e7e8e6ed815ae"
+      "bytes": 34717,
+      "sha256": "41338ea9b77b0e73f5c13c9b96a07e381935f76d44c5d6050ef6fa16e9619984"
     },
     {
       "path": "skills/route-replay/scripts/engine/cycles_device.py",
@@ -453,8 +478,8 @@
     },
     {
       "path": "skills/route-replay/scripts/engine/nightlighting.py",
-      "bytes": 11534,
-      "sha256": "ccf114b0fb931e4cb6eed8851c3b69a23f8d913dfdae63d5e1624c8b89c53ae3"
+      "bytes": 8293,
+      "sha256": "e48ccd84d27931c4e418c12a3e21324a7c63a989a252b38e897f51dd3e17ae3d"
     },
     {
       "path": "skills/route-replay/scripts/engine/quality.py",
@@ -468,8 +493,8 @@
     },
     {
       "path": "skills/route-replay/scripts/engine/render.py",
-      "bytes": 17079,
-      "sha256": "8dc9ba614ce722af06cc315f0e4707fcd09b1d742a20e513c62b8250b1369094"
+      "bytes": 16575,
+      "sha256": "9b0a4fdc12122988c9f1159dba703dfc4f31a5480c4abf7e3c0de68e9cba4c78"
     },
     {
       "path": "skills/route-replay/scripts/engine/runtime.py",
@@ -493,8 +518,8 @@
     },
     {
       "path": "skills/route-replay/scripts/engine/starfield.py",
-      "bytes": 8074,
-      "sha256": "14e39f4df72bb569fb016c583991372679251ebcfa303abe5b70212145c572d2"
+      "bytes": 7775,
+      "sha256": "4fbc5f8817b3255b9e1bcd0db7e19195a7febe55fb5a80c85ede379964e90c1b"
     },
     {
       "path": "skills/route-replay/scripts/engine/surfacelighting.py",
@@ -533,8 +558,8 @@
     },
     {
       "path": "skills/route-replay/scripts/flight_video.py",
-      "bytes": 45117,
-      "sha256": "f10ebffee30b81c95089d4042720079e20e612197ac9e45b730569da26b145ba"
+      "bytes": 45431,
+      "sha256": "cf07477c7b4c12d42ed3768f64ba63b30e821a2ab5fc28bf19f0f270843e2266"
     },
     {
       "path": "skills/route-replay/scripts/gfs_archive.py",
@@ -563,8 +588,8 @@
     },
     {
       "path": "skills/route-replay/scripts/render_budget.py",
-      "bytes": 28423,
-      "sha256": "cb0734f56d0aa6115c9cc9c6c4f1333261977f9d19b15a529ce3345754d9248f"
+      "bytes": 28217,
+      "sha256": "053d2e2e2b48ced0a23d2e09b6409fbba4951a54110e3c455730484d95116b12"
     },
     {
       "path": "skills/route-replay/scripts/requirements-metal.txt",
@@ -593,8 +618,8 @@
     },
     {
       "path": "skills/route-replay/scripts/trip.py",
-      "bytes": 29679,
-      "sha256": "051114545584ecc3bf843d76d848249febaea19e374f99ed7781ec454e35535a"
+      "bytes": 29830,
+      "sha256": "fb5f3b60456468ef2690c81910548c11093f7bf0130c233c7e65820302003b46"
     },
     {
       "path": "tests/test_acceleration.py",
@@ -622,14 +647,24 @@
       "sha256": "d393f377c36f43e049df157824f1ba7f31818cfc150f9bb4dadac59d2fc755ae"
     },
     {
+      "path": "tests/test_aircraft_night.py",
+      "bytes": 3195,
+      "sha256": "e16a8bd4dd30e9f6cf2049bb0e80cc1b8a26a201790afa14c4071cc481542baf"
+    },
+    {
       "path": "tests/test_atmosphere_lookup.py",
       "bytes": 6363,
       "sha256": "680001211bfa74f58822064c519bde64597c164729506ea0f6551f63f9d8f493"
     },
     {
+      "path": "tests/test_boeing_737.py",
+      "bytes": 4964,
+      "sha256": "42e84bbe2553b6b7af70bab443a1c951aa7cc11c94502f694dd0697fe87570f8"
+    },
+    {
       "path": "tests/test_calibration.py",
-      "bytes": 9113,
-      "sha256": "24a28f16157c2fd7230481e748ef423ede08f4f3405c36d93f5d836af4d656ce"
+      "bytes": 10165,
+      "sha256": "7f67f25fe9b0e3b95f06a43de6b6244284763cdd0ab0926cf9e38a44b5353893"
     },
     {
       "path": "tests/test_causal_lights.py",
@@ -658,8 +693,8 @@
     },
     {
       "path": "tests/test_chase_preview.py",
-      "bytes": 16650,
-      "sha256": "7cee308ca2cf6fafb11accc89db69bb33c614070fed391fee03f154276099786"
+      "bytes": 18342,
+      "sha256": "d2613a32d101bddfe3c1eec708f5da470e7315d97768541b28965c2380059bca"
     },
     {
       "path": "tests/test_chase_weather.py",
@@ -723,8 +758,8 @@
     },
     {
       "path": "tests/test_export_skill.py",
-      "bytes": 6303,
-      "sha256": "f4a22cf812f82769cda147af34e3b520c68ace23e7e6d53ac7ebaf08b62b9f37"
+      "bytes": 7039,
+      "sha256": "d7512cecde374b8e406b7c1d7295e19c034a8c76bea8456aba8928319eb5d44a"
     },
     {
       "path": "tests/test_gfs_archive.py",
@@ -750,6 +785,11 @@
       "path": "tests/test_lamp_spectra.py",
       "bytes": 7322,
       "sha256": "e175510362dbdb10afc043550deb373aa5b474968f4d7666ad83c7dad27d2c8b"
+    },
+    {
+      "path": "tests/test_layover_presentation.py",
+      "bytes": 3620,
+      "sha256": "94e036a351a6a022bd5539499b604c42da27ca1a7a4523fae3f84927fe43d84a"
     },
     {
       "path": "tests/test_lighting_profile.py",
@@ -813,8 +853,8 @@
     },
     {
       "path": "tests/test_render_budget.py",
-      "bytes": 20031,
-      "sha256": "11ddcaa821855bb71cb63dbf948a32e3f8c959979c61ac769267835c366f134b"
+      "bytes": 20035,
+      "sha256": "665d0b977f6bf3e9c1a9aeeb77429912dc09145d278620e18be6c499b388dddc"
     },
     {
       "path": "tests/test_scene_cache.py",
@@ -883,8 +923,8 @@
     },
     {
       "path": "tools/export_skill_repo.py",
-      "bytes": 11819,
-      "sha256": "6dcc6c2ae59a949aecaaebede04de879baeda45e71c7806cd8c76b34276963e0"
+      "bytes": 10601,
+      "sha256": "6fa21f9d7aa58b1adc0380d023927e3692d15bfc95868b21a6c5925efa718386"
     },
     {
       "path": "tools/list_skills.py",
@@ -895,11 +935,6 @@
       "path": "tools/test_portable.py",
       "bytes": 836,
       "sha256": "ff39b203efc6b6db98042ff600908b51bbc9032a06b5ca1a3f65eeaffe44b336"
-    },
-    {
-      "path": ".gitignore",
-      "bytes": 907,
-      "sha256": "438bdca31bc4101b7165c9f8745ff529bc6f8314ac8d8581fee565d92de4d386"
     }
   ]
 }

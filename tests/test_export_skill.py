@@ -1,5 +1,7 @@
 """The standalone distribution must never silently drop required tests."""
 from pathlib import Path
+import hashlib
+import json
 import os
 import subprocess
 import sys
@@ -12,8 +14,20 @@ import export_skill_repo as exporter
 
 
 class DistributionTests(unittest.TestCase):
-    def test_checkout_ignore_rules_match_exported_rules(self):
-        self.assertEqual((exporter.ROOT/'.gitignore').read_text(),exporter.PORTABLE_IGNORE)
+    def test_export_preserves_source_ignore_rules_and_manifest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory).resolve()/'source';root.mkdir()
+            ignore=root/'.gitignore'
+            ignore.write_text((exporter.ROOT/'.gitignore').read_text()+'/extra-private/\n')
+            files=[ignore]
+            entries=exporter.audit(root,files)
+            destination=Path(directory)/'export'
+            exporter.export(root,destination,files,entries)
+            self.assertEqual((destination/'.gitignore').read_bytes(),ignore.read_bytes())
+            manifest=json.loads((destination/'distribution-manifest.json').read_text())
+            self.assertEqual(manifest['files'],[{
+                'path':'.gitignore','bytes':len(ignore.read_bytes()),
+                'sha256':hashlib.sha256(ignore.read_bytes()).hexdigest()}])
 
     def test_public_audit_rejects_private_binary_media_and_large_files(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -62,8 +76,9 @@ class DistributionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory).resolve()
             subprocess.run(['git','init','-q',str(root)],check=True)
-            (root/'.gitignore').write_text(exporter.PORTABLE_IGNORE)
+            (root/'.gitignore').write_text((exporter.ROOT/'.gitignore').read_text())
             ignored=['.env','.env.local','.cdsapirc','nested/credentials.json',
+                     '.local/archive/history.bundle',
                      'private/trip.json','trips/holiday.json','tracks/flight.csv',
                      'preview-site/trip.json','trip.json','data/earth.jpg',
                      'renders/video.mp4','nested/photo.heic','nested/model.glb',
@@ -82,17 +97,16 @@ class DistributionTests(unittest.TestCase):
             subprocess.run(['git','init','-q',str(root)],check=True)
             subprocess.run(['git','-C',str(root),'config','core.excludesFile',os.devnull],check=True)
             source=root/'README.md';source.write_text('Route Replay\n')
-            (root/'.gitignore').write_text(exporter.PORTABLE_IGNORE)
+            ignore=root/'.gitignore'
+            ignore.write_text((exporter.ROOT/'.gitignore').read_text())
             subprocess.run(['git','-C',str(root),'add','README.md','.gitignore'],check=True)
-            self.assertEqual(set(exporter.tracked_files(root,[source])),{source,root/'.gitignore'})
-            (root/'.gitignore').write_text('')
-            with self.assertRaisesRegex(ValueError,'portable ignore rules'):
+            self.assertEqual(set(exporter.tracked_files(root,[source,ignore])),{source,ignore})
+            with self.assertRaisesRegex(ValueError,'.gitignore'):
                 exporter.tracked_files(root,[source])
-            (root/'.gitignore').write_text(exporter.PORTABLE_IGNORE)
             private=root/'private/itinerary.json';private.parent.mkdir();private.write_text('{}')
             subprocess.run(['git','-C',str(root),'add','-f',str(private)],check=True)
             with self.assertRaisesRegex(ValueError,'private/itinerary.json'):
-                exporter.tracked_files(root,[source])
+                exporter.tracked_files(root,[source,ignore])
 
     def test_missing_allowlisted_file_fails_before_export(self):
         with tempfile.TemporaryDirectory() as directory:

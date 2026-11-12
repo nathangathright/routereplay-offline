@@ -18,6 +18,8 @@ import subprocess
 import sys
 import time
 
+from data import write_json
+
 SCRIPTS = Path(__file__).resolve().parent
 MAX_SAMPLES = 12
 MAX_MEASURED_PREPASS_FRAMES = 12000
@@ -34,14 +36,6 @@ def _read(path):
         return json.loads(Path(path).read_text())
     except (OSError, ValueError):
         return None
-
-
-def _write(path, value):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    pending = path.with_name(path.name + '.pending')
-    pending.write_text(json.dumps(value, indent=2, allow_nan=False) + '\n')
-    pending.replace(path)
 
 
 def _positive(value):
@@ -301,7 +295,7 @@ def _worker(request_path):
         result['scene_cache'] = {status:events.count(status) for status in ('hit','miss')}
     result['memory'] = _memory()
     result['worker_total_seconds'] = time.perf_counter()-started
-    _write(request['result_path'], result)
+    write_json(request['result_path'], result)
 
 
 def estimate(progress, benchmark, *, workers, fingerprint=None):
@@ -444,7 +438,7 @@ def run_budget(args, trip, bundle, work, environment, *, startup_seconds=0.):
                    'frames':new_frames,'workers':workers,'aircraft':args.aircraft,'environment':environment,
                    'threads':getattr(args,'blender_threads',2),'frame_timeout':getattr(args,'blender_frame_timeout',120.),
                    'result_path':str(work/'render-budget-measurement.json')}
-        request_path = work/'render-budget-request.json'; _write(request_path,request)
+        request_path = work/'render-budget-request.json'; write_json(request_path,request)
         started = time.perf_counter()
         log_path = work/'render-budget.log'
         code = _measure(request_path,log_path,timeout)
@@ -460,7 +454,7 @@ def run_budget(args, trip, bundle, work, environment, *, startup_seconds=0.):
         after_stamp = identity(trip,work,environment,workers=workers,aircraft_mode=args.aircraft,
                                quality=args.quality,transport=args.transport)
         if after_stamp['fingerprint'] == stamp['fingerprint']:
-            _write(work/'render-budget-benchmark.json',benchmark)
+            write_json(work/'render-budget-benchmark.json',benchmark)
     else:
         after_stamp = stamp
     changed = after_stamp['fingerprint'] != stamp['fingerprint']
@@ -482,9 +476,9 @@ def run_budget(args, trip, bundle, work, environment, *, startup_seconds=0.):
             'but cannot establish a matching budget; repeat after source changes finish.')
     destination=getattr(args,'report',None)
     if destination:
-        _write(Path(destination).expanduser().resolve(),report)
+        write_json(Path(destination).expanduser().resolve(),report)
     elif not estimate_only:
-        _write(work/'render-budget.json',report)
+        write_json(work/'render-budget.json',report)
     return report
 
 

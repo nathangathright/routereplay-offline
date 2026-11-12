@@ -24,7 +24,7 @@ Use JSON with `schema_version: 1`. The examples are synthetic, not flight schedu
 
 Departure and arrival timestamps **must include the airport's local UTC offset** and must match its IANA timezone at that instant. For example, Chicago uses `-05:00` in summer and `-06:00` in winter under the currently installed timezone rules. A UTC `Z` timestamp is accepted only for an airport whose local offset is zero at that instant. During an autumn repeated hour, either valid offset selects the intended occurrence. A nonexistent spring-forward time is rejected. Update the operating system timezone database when future civil-time rules change.
 
-Aircraft values currently supported: `a321neo`, `777-200er`, `787-9`, `757-300`. An unsupported type fails validation rather than silently substituting another model. Without a trajectory, coincident airport locations and exactly antipodal endpoints are rejected because the arc or heading is undefined. Add an intermediate airport, or supply an unambiguous trajectory with nonzero travel.
+Aircraft values currently supported: `a321neo`, `737-900er`, `777-200er`, `787-9`, `757-300`. An unsupported type fails validation rather than silently substituting another model. Without a trajectory, coincident airport locations and exactly antipodal endpoints are rejected because the arc or heading is undefined. Add an intermediate airport, or supply an unambiguous trajectory with nonzero travel.
 
 ## Supplied trajectories
 
@@ -117,6 +117,7 @@ These are presentation durations. They do not alter actual arrival/departure dat
 | `cloud_lighting` | 1 | Blend from earlier normal-based shading (0) to volume scattering and directional sky illumination (1); see [cloud lighting](cloud-lighting.md) |
 | `cloud_morphology` | 1 | Rounded billows with bounded wind history (1), or earlier sheets and seed history (0); see [cloud morphology](cloud-morphology.md) |
 | `moonlight` | 4000 | Shared cloud, terrain, ocean and Cycles aircraft lunar multiplier (`cloud_moonlight` is a legacy alias), from 0 to 20000; 0 disables it, 1 uses the unboosted reference, 4000 is cinematic. See [moonlight](moonlight.md) |
+| `aircraft_night_light` | 0 | Opt-in aircraft-only cinematic key/fill strength, from 0 to 2; 1 is a readable-night preset. Fades out in daylight and does not brighten the globe. See [aircraft-only light](aircraft-night-light.md). |
 | `cloud_city_glow` | 2 | Cinematic ground-light scattering into clouds, from 0 to 8; 0 disables it |
 | `atmosphere_multiple_scattering` | 1 | Bounded approximate secondary atmospheric scattering |
 | `atmosphere_saturation` | 1 | Atmospheric scattering color saturation |

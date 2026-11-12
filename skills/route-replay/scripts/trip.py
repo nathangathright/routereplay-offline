@@ -17,7 +17,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from trajectory import Trajectory, parse_trajectory
 
 UTC = datetime_timezone.utc
-SUPPORTED_AIRCRAFT = ("a321neo", "777-200er", "787-9", "757-300")
+from aircraft_assets import SUPPORTED_AIRCRAFT
 WEATHER_MODES = ("clear", "forecast", "historical", "illustrative_replay")
 STYLE_DEFAULTS = {
     "ground_radius": 1300.0,
@@ -32,6 +32,7 @@ STYLE_DEFAULTS = {
     "cloud_lighting": 1.0,
     "cloud_morphology": 1.0,
     "moonlight": 4000.0,
+    "aircraft_night_light": 0.0,
     "atmosphere_multiple_scattering": 1.0,
     "atmosphere_saturation": 1.0,
     "city_light_strength": 1.0,
@@ -482,6 +483,8 @@ def trip_from_dict(data: dict[str, Any]) -> Trip:
             raise TripError("style.cloud_lighting must be in [0, 1]")
         if key == "cloud_morphology" and style[key] not in (0,1):
             raise TripError("style.cloud_morphology must be 0 (legacy) or 1 (billows)")
+        if key == "aircraft_night_light" and style[key] > 2:
+            raise TripError("style.aircraft_night_light must be in [0, 2]")
         if key == "moonlight" and style[key] > 20000:
             raise TripError("style.moonlight must be in [0, 20000]")
         if key == "cloud_city_glow" and style[key] > 8:

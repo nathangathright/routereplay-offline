@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 from runtime import AIRCRAFT_DIR, AIRCRAFT_MODE
 from camera_geometry import EARTH_M, focal_length, distance as camera_distance
-from radiometry import resize_float, srgb_to_linear, tone_map
+from radiometry import resize_float, srgb_to_linear
 
 
 @dataclass(frozen=True)
@@ -213,11 +213,3 @@ def plane_radiance(motion, t, tick, *, size=(224, 224), altitude_m=None):
                          sum(layer.depth_error_earth * weight for layer, weight in layers),
                          sum(layer.bank_deg * weight for layer, weight in layers),
                          sum(layer.pitch_deg * weight for layer, weight in layers))
-
-
-def plane_sprite(motion, t, tick):
-    """Display preview adapter; the scene compositor consumes plane_radiance."""
-    layer = plane_radiance(motion, t, tick, size=(384, 384))
-    color = np.divide(layer.radiance, layer.alpha, out=np.zeros_like(layer.radiance),
-                      where=layer.alpha > 0)
-    return Image.fromarray(np.rint(np.concatenate((tone_map(color), layer.alpha), -1) * 255).astype(np.uint8))

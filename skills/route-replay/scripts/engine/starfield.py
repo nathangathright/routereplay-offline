@@ -15,9 +15,8 @@ import math
 
 import erfa
 import numpy as np
-from PIL import Image
 from camera_geometry import focal_length, HORIZONTAL_FOV_DEGREES
-from radiometry import srgb_to_linear, display_image
+from radiometry import srgb_to_linear
 
 from runtime import ASSETS, TRIP
 STAR_DIR = ASSETS / 'stars'
@@ -171,8 +170,3 @@ def star_radiance(bs, dt, radius, size=(1080, 1920), center=(540, 960), *, visib
             light += (2-magnitude)*(7/255)*np.exp(-distance2/(2*halo_sigma*halo_sigma))
         sky[top:bottom,left:right] += visibility*TRIP.style['star_strength']*light[...,None]*stars['color'][index]
     return sky
-
-
-def star_background(bs, dt, radius, size=(1080, 1920), center=(540, 960), *, visibility=1.0):
-    """Display preview only; the scene compositor uses star_radiance."""
-    return display_image(star_radiance(bs, dt, radius, size, center, visibility=visibility))

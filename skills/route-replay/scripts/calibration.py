@@ -10,7 +10,8 @@ import math
 from pathlib import Path
 
 MAX_BYTES=256*1024
-TYPES={'generic','a321neo','777-200er','787-9','757-300'}
+from aircraft_assets import SUPPORTED_AIRCRAFT
+TYPES={'generic', *SUPPORTED_AIRCRAFT}
 SLOTS={'paint','wing','metal','glass','dark','panel'}
 SOURCE_KEYS={'url','credit','license_url','notes'}
 

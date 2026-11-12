@@ -20,7 +20,7 @@ from cloudlayers import sample_layer_fields
 from weatherfields import backtrace_coordinates, timestamp
 import weatherfields
 from cloudshapes import density_shape
-from radiometry import TransportLayer, resize_float, linear_to_srgb
+from radiometry import TransportLayer, resize_float
 from quality import get_quality
 from runtime import TRIP
 from solar_visibility import solar_visibility, shadow_boundaries, split_intervals
@@ -50,33 +50,6 @@ del _noise_grid,_noise_hash
 class CloudVolumeResult:
     layer: TransportLayer
     foreground_layer: TransportLayer
-
-    # Display-only compatibility. The compositor consumes the float fields.
-    @property
-    def clouds(self):
-        return _legacy_rgba(self.layer)
-
-    @property
-    def foreground(self):
-        return _legacy_rgba(self.foreground_layer)
-
-    @property
-    def transmittance(self):
-        return Image.fromarray(np.uint8(np.clip(self.foreground_layer.transmittance[...,0]*255+.5,0,255)))
-
-    @property
-    def foreground_radiance(self):
-        return Image.fromarray(np.uint8(np.clip(linear_to_srgb(self.foreground_layer.radiance)*255,0,255)))
-
-    def __iter__(self):
-        yield self.clouds
-        yield self.transmittance
-
-
-def _legacy_rgba(layer):
-    alpha=1-layer.transmittance[...,:1]
-    straight=layer.radiance/np.maximum(alpha,1e-8)
-    return Image.fromarray(np.uint8(np.clip(np.concatenate([linear_to_srgb(straight),alpha],axis=-1)*255,0,255)))
 
 
 def _smoothstep(a,b,x):

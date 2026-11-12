@@ -2,6 +2,8 @@
 
 `chase_preview.py` renders a short, local third-person shot around one flight instant. It is an alternate camera study, separate from the north-up globe film. It does not automatically edit the shot into a trip or replace an approved export.
 
+Aircraft-only cinematic night lighting is currently globe-renderer only. Chase preparation rejects positive `style.aircraft_night_light`; use 0 in the chase configuration. The shared chase scene needs explicit aircraft light linking before this can be supported without lighting the surroundings.
+
 ```sh
 python3 "$SKILL_DIR/scripts/chase_preview.py" trip.json \
   --assets data/bundle --flight 1 --at 2029-11-03T17:00:00+00:00 \

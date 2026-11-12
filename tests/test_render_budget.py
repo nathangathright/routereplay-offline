@@ -262,7 +262,7 @@ class CacheIntegrationTests(unittest.TestCase):
                                  samples=1,frames=[4],assets=temp,estimate_only=False,report=None)
             state={**progress(),'missing_frame_indices':list(range(9))}
             def measure(request,log,timeout):
-                budget._write(work/'render-budget-measurement.json',measurement()['measurement'])
+                budget.write_json(work/'render-budget-measurement.json',measurement()['measurement'])
                 return 0
             with patch('render_budget.cache_progress',return_value=state), \
                  patch('render_budget.identity',side_effect=[{'fingerprint':'before'},{'fingerprint':'after'}]), \

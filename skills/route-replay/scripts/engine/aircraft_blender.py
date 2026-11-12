@@ -27,13 +27,15 @@ from mathutils import Matrix, Vector
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 sys.path.insert(0,str(Path(__file__).resolve().parent.parent))
 from quality import get_quality
+from aircraft_assets import SUPPORTED_AIRCRAFT
+from aircraft_night import cinematic_lights
 
 import os
 ASSETS = Path(os.environ['FLIGHT_AIRCRAFT_DIR'])
 ASSETS.mkdir(parents=True, exist_ok=True)
 SPRITES = ASSETS / 'frames'
 SPRITES.mkdir(exist_ok=True)
-VARIANT = next((name for name in ('a321neo', '777-200er', '787-9', '757-300')
+VARIANT = next((name for name in SUPPORTED_AIRCRAFT
                 if '--'+name in sys.argv), None)
 CINEMATIC = '--cinematic' in sys.argv or VARIANT is not None
 FLEX_OBJECTS = []
@@ -41,13 +43,18 @@ FLEX_LAMPS = []
 BEACON = None
 ENVIRONMENT = None
 MOON = None
+CINEMATIC_LIGHTS = []
 ASSET_MODEL = None
 ASSET_METADATA = None
 ASSET_GEOMETRY = None
 MATERIAL_CALIBRATION = {}
 SUN_COLOR = (1.,1.,1.)
 
+from aircraft_assets import (BOEING_737_900ER, BOEING_737_PLANFORM,
+                             BOEING_737_BODY, boeing_737_model_point)
+
 AIRFRAME_SPECS = {
+    '737-900er': BOEING_737_900ER,
     'a321neo': {
         'name': 'Airbus A321neo', 'length_m': 44.51, 'span_m': 35.80,
         'fuselage_width_m': 3.95, 'tailplane_span_m': 12.45,
@@ -427,7 +434,7 @@ def update_flex(sample):
     phase=elevation*elevation*(3-2*elevation)
     flex=.18*phase*(1+.06*math.sin(sample['t']*1.7))
     tip_span = 5.9
-    if VARIANT in ('787-9','757-300'):
+    if VARIANT in ('787-9','757-300','737-900er'):
         spec=AIRFRAME_SPECS[VARIANT]
         tip_span=spec['span_m']/(2*(spec['length_m']/12.01))
     def amount(x): return flex*(min(1,max(0,(abs(x)-.4)/(tip_span-.4)))**1.7)
@@ -660,6 +667,89 @@ def cylinder(name, radius, depth, loc, mat, vertices=64):
     return ob
 
 
+def create_boeing_737(paint, wings, metal, glass, dark):
+    """Independent 737-900ER mesh from metre-scale Boeing three-view stations."""
+    global BEACON
+    aircraft.name = BOEING_737_900ER['name']+' centered display model'
+    unit = BOEING_737_900ER['length_m']/12.01
+    point = boeing_737_model_point
+    tube('Rounded pressure fuselage', [
+        (6.005-aft/unit, rx/unit, rz/unit, z/unit)
+        for aft,rx,rz,z in reversed(BOEING_737_BODY)], paint)
+    for side,sign in (('port',-1),('starboard',1)):
+        for key,name,thickness,mat in (
+                ('wing','swept main wing',.32,wings),
+                ('winglet','conventional blended winglet',.12,paint),
+                ('tailplane','horizontal tailplane',.24,wings)):
+            wing(side+' '+name,[point(p,sign) for p in BOEING_737_PLANFORM[key]],
+                 thickness/unit,mat)
+        for name,stations in (
+                ('flap hinge',[(2.,22.25,-.43),(5.55,22.25,-.42),(12.4,24.6,.16)]),
+                ('aileron division',[(12.4,24.1,.19),(12.4,25.5,.19)]),
+                ('tail elevator hinge',[(1.5,39.3,.89),(6.8,41.6,1.42)])):
+            seam(side+' '+name,[point(p,sign) for p in stations],.018/unit)
+        # CFM56-7B family cowl: broad, flattened underside, open circular fan
+        # cavity and smooth rear edge. Deliberately no MAX/787 chevrons.
+        def cowl(name, stations, mat):
+            ob=tube(side+' '+name,[(6.005-aft/unit,rx/unit,rz/unit,-1.25/unit)
+                                  for aft,rx,rz in stations],mat,caps=False)
+            ob.location.x=sign*4.83/unit
+            # The low-ground-clearance 737NG nacelle's characteristic flattened
+            # lower lip. Keep inlet opening above it and avoid closing the mouth.
+            for vertex in ob.data.vertices:
+                vertex.co.z=max(vertex.co.z,-2.05/unit)
+            return ob
+        cowl('CFM56 rounded engine nacelle',[
+            (18.85,.63,.63),(18.25,1.02,.96),(16.5,1.20,1.04),
+            (15.05,1.12,.97),(14.73,.98,.90),(14.76,.85,.79),
+            (15.35,.83,.77)],paint)
+        cowl('CFM56 metal intake rim',[
+            (15.00,1.115,.965),(14.73,.99,.91),
+            (14.72,.855,.80),(15.10,.84,.785)],metal)
+        cylinder(side+' CFM56 recessed fan disc',.77/unit,.045/unit,
+                 point((4.83,15.23,-1.25),sign),dark)
+        for rr in (.26,.45,.64,.74):
+            bpy.ops.mesh.primitive_torus_add(major_radius=rr/unit,minor_radius=.023/unit,
+                major_segments=48,minor_segments=8,
+                location=point((4.83,15.20,-1.25),sign),rotation=(math.pi/2,0,0))
+            rotor=bpy.context.object;rotor.name=side+' CFM56 blurred fan band'
+            rotor.parent=aircraft;rotor.data.materials.append(metal)
+        bpy.ops.mesh.primitive_cone_add(vertices=32,radius1=.24/unit,radius2=.025/unit,
+            depth=.42/unit,location=point((4.83,15.02,-1.25),sign),
+            rotation=(-math.pi/2,0,0))
+        spinner=bpy.context.object;spinner.name=side+' CFM56 fan spinner'
+        spinner.parent=aircraft;spinner.data.materials.append(metal)
+        cylinder(side+' CFM56 exhaust core',.45/unit,.30/unit,
+                 point((4.83,18.94,-1.25),sign),metal)
+        wing(side+' engine pylon',[point(p,sign) for p in [
+            (4.58,15.8,-.05),(5.08,15.8,-.05),
+            (5.08,20.2,-.45),(4.58,20.2,-.45)]],.25/unit,paint)
+        nav,_=lamp(side+' position light',point((17.84,27.30,4.08),sign),
+                   (.9,.008,.003) if sign<0 else (.006,.75,.08),.045,5.0)
+        FLEX_LAMPS.append((nav,nav.location.copy()))
+        # Six angular NG windscreen panes, no old eyebrow windows. Approximate
+        # surface placement follows the independent 737 nose stations.
+        for name,coords in [
+            ('Forward cockpit windscreen',[(.06,2.00,1.08),(.66,2.04,.98),
+                                           (.80,2.65,1.32),(.06,2.72,1.50)]),
+            ('Side cockpit glazing',[(.71,2.04,.96),(1.10,2.52,.97),
+                                     (1.25,3.12,1.10),(.85,2.65,1.31)]),
+            ('Rear side cockpit glazing',[(1.13,2.56,.95),(1.39,3.08,.91),
+                                          (1.50,3.65,1.00),(1.28,3.16,1.09)])]:
+            mesh(name,[point(p,sign) for p in coords],[(0,1,2,3)],glass)
+    # Fin is extruded transversely, not with the horizontal wing helper.
+    outline=BOEING_737_PLANFORM['fin'];n=len(outline)
+    vertices=[point((x,aft,z)) for x in (-.18,.18) for _,aft,z in outline]
+    faces=[tuple(range(n)),tuple(range(2*n-1,n-1,-1))]
+    faces += [(i,(i+1)%n,(i+1)%n+n,i+n) for i in range(n)]
+    fin=mesh('Vertical tail fin with NG dorsal fillet',vertices,faces,paint)
+    bevel=fin.modifiers.new('Rounded tail edges','BEVEL');bevel.width=.02;bevel.segments=3
+    fin.modifiers.new('Tail weighted normals','WEIGHTED_NORMAL')
+    lamp('White aft position light',point((0.,40.65,1.05)),(.8,.86,1.0),.04,3.0)
+    _,BEACON=lamp('Red upper anti-collision beacon',point((0.,19.4,2.04)),
+                  (.95,.006,.002),.045,.15)
+
+
 def create_procedural_aircraft():
     global panel, BEACON
     paint = material('Pearl white aircraft paint',(.80,.82,.84),.16,.30)
@@ -681,6 +771,10 @@ def create_procedural_aircraft():
         p.inputs['Transmission Weight'].default_value=.05
         p.inputs['Coat Weight'].default_value=.35
     apply_material_calibration({'paint':paint,'wing':wings,'metal':metal,'glass':glass,'dark':dark,'panel':panel})
+    if VARIANT == '737-900er':
+        create_boeing_737(paint, wings, metal, glass, dark)
+        prepare_flex()
+        return
     tube('Rounded pressure fuselage',[
         (-6.25,.018,.018,.19),(-5.85,.16,.17,.10),(-5.0,.35,.36,0),
         (-4.1,.52,.54,0),(-3.2,.59,.61,0),(2.95,.59,.61,0),
@@ -846,6 +940,15 @@ def create_scene():
     MOON.data.angle=math.radians(.52)
     MOON.data.energy=0.
     MOON.data.use_shadow=True
+    CINEMATIC_LIGHTS.clear()
+    for name in ("Aircraft-only cinematic key", "Aircraft-only cinematic fill"):
+        bpy.ops.object.light_add(type='SUN', location=(0,0,10))
+        light=bpy.context.object
+        light.name=name
+        light.data.angle=math.radians(12.)
+        light.data.energy=0.
+        light.data.use_shadow=True
+        CINEMATIC_LIGHTS.append(light)
     return scene,sun
 
 
@@ -905,6 +1008,12 @@ def pose(sample, sun):
     MOON.data.angle=angle
     MOON.data.color=tuple(value/peak for value in moon_rgb) if peak else (1.,1.,1.)
     MOON.data.energy=math.pi*peak
+    key_direction,key_rgb,fill_direction,fill_rgb=cinematic_lights(sample)
+    for light,direction,rgb in zip(CINEMATIC_LIGHTS,(key_direction,fill_direction),(key_rgb,fill_rgb)):
+        peak=max(rgb)
+        light.rotation_euler=(-Vector(direction)).to_track_quat('-Z','Y').to_euler()
+        light.data.energy=math.pi*peak
+        light.data.color=tuple(v/peak for v in rgb) if peak else (1.,1.,1.)
     if CINEMATIC:
         update_environment(sample)
         detail=None if ASSET_MODEL is not None else update_flex(sample)
@@ -946,20 +1055,39 @@ def validate_geometry(scene, sun):
         'tailplane_span_m':float(np.ptp(tail[:,0])*unit),
         'fuselage_midpoint_model_units':float((body[:,1].min()+body[:,1].max())/2),
     }
-    for measured_name,spec_name in [('fuselage_length_m','length_m'),
+    for measured_name,spec_name in [('fuselage_length_m','fuselage_length_m' if VARIANT=='737-900er' else 'length_m'),
                                     ('fuselage_width_m','fuselage_width_m'),
                                     ('wing_span_m','span_m'),
                                     ('tailplane_span_m','tailplane_span_m')]:
         assert abs(measured[measured_name]-spec[spec_name])<1e-4, (measured_name,measured)
-    assert abs(measured['fuselage_midpoint_model_units'])<1e-6
+    if VARIANT == '737-900er':
+        envelope=vertices(['Rounded pressure fuselage','horizontal tailplane'])
+        measured['overall_length_m']=float(np.ptp(envelope[:,1])*unit)
+        assert abs(measured['overall_length_m']-spec['length_m'])<1e-4
+        assert abs((envelope[:,1].min()+envelope[:,1].max())/2)<1e-6
+    else:
+        assert abs(measured['fuselage_midpoint_model_units'])<1e-6
     names=[ob.name for ob in aircraft.children]
     if VARIANT=='787-9':
         assert not any('winglet' in name for name in names)
         assert sum('chevron fan cowl' in name for name in names)==2
         assert sum('cockpit' in name for name in names)==4
-    if VARIANT=='757-300':
+    if VARIANT in ('757-300','737-900er'):
         assert sum('conventional blended winglet' in name for name in names)==2
         assert not any('chevron' in name for name in names)
+    if VARIANT=='737-900er':
+        assert sum('CFM56 rounded engine nacelle' in name for name in names)==2
+        assert sum('cockpit' in name for name in names)==6
+        cowl=vertices(['CFM56 rounded engine nacelle'])
+        assert abs(cowl[:,2].min()*unit+2.05)<1e-4
+        assert float(cowl[:,2].max()*unit)<0.
+        starboard=vertices(['starboard CFM56 rounded engine nacelle'])
+        measured['engine_center_offset_m']=float((starboard[:,0].max()+starboard[:,0].min())*unit/2)
+        measured['engine_lip_aft_nose_m']=float((6.005-starboard[:,1].max())*unit)
+        assert abs(measured['engine_center_offset_m']-spec['engine_center_offset_m'])<1e-4
+        assert abs(measured['engine_lip_aft_nose_m']-spec['engine_lip_aft_nose_m'])<1e-4
+        tip=vertices(['conventional blended winglet'])
+        assert tip[:,2].min()>0. and tip[:,2].max()*unit>4.
     # Exercise the actual lighting and flex path, then restore a neutral pose.
     for heading,altitude in [(0,0),(120,11000),(290,6000),(0,0)]:
         sample={'heading':heading,'illustrative_altitude_m':altitude,
@@ -1265,7 +1393,7 @@ def main():
              attitude_state(sample),
              tuple(sample['sun_camera']) if (sample['sun_visibility'] or CINEMATIC or
                                              sample.get('moonlight_enabled',False)) else None,
-             lunar_light_state(sample),
+             lunar_light_state(sample),cinematic_lights(sample),
              detail_state,sample['camera_distance_earth'],
              sample.get('rendered_altitude_m',sample['aircraft_altitude_m']))
         if key in cache:
@@ -1288,7 +1416,7 @@ def main():
         'renderer':f'Cycles path tracer, {get_quality().aircraft_samples} samples with denoising',
         'cycles_device':device_record,
         'canvas':[384,384], 'camera':'Finite perspective central crop, shared 70-degree full-canvas field of view; northward nose +Y, camera +Z.',
-        'lighting':'Directional astronomical sun from lighting-samples.json, 0.53 degree solar disc; true mesh self-shadowing. Sun occlusion by Earth uses itinerary position and illustrative flight altitude. Uniform blue environment fill at strength 0.65 lifts exposure for night readability; no directional fill is added.',
+        'lighting':'Directional astronomical sun from lighting-samples.json, 0.53 degree solar disc; true mesh self-shadowing. Sun occlusion by Earth uses itinerary position and illustrative flight altitude. Earth/sky environment supplies low-radiance fill. Optional aircraft-only cinematic key/fill is described separately.',
         'heading':'Clockwise from screen north, applied as negative Z rotation.',
         'attitude':'Optional modeled local bank/pitch from physical-time route curvature/climb; +bank right wing down, +pitch nose up. Rz(-heading) @ Rx(pitch) @ Ry(bank) rotates the same geometry before shadows, depth and evaluated contact clearance. Not measured attitude.',
         'composition':'Use RGBA frames/frame-{frame:04d}.png centered in the video; designed for a 224x224 composite footprint.',
@@ -1304,7 +1432,7 @@ def main():
             'environment':'Analytic local Earth/sky HDR radiance, aligned to local vertical and solar elevation/azimuth; reflection approximation, not a photographic HDRI or additional forecast.',
             'details':'Steady port-red/starboard-green/aft-white position lamps; subdued red upper beacon on presentation time; open intakes with motion-averaged fan bands and spinners; dielectric paint clearcoat and reflective cockpit glazing.',
             'flex':'Symmetric 0.18-model-unit maximum wingtip flex driven by illustrative flight altitude, with 6% slow settling variation; cinematic load-inspired deformation, not measured turbulence.',
-            'lighting':'Same astronomical directional Sun, Earth eclipse and 0.53-degree disc as baseline. Environment approximates Earth/sky fill with a deliberate night exposure floor; no camera-fixed studio highlights or globe drop shadow.',
+            'lighting':'Same astronomical directional Sun, Earth eclipse and 0.53-degree disc as baseline. Environment approximates Earth/sky fill with a deliberate night exposure floor; optional aircraft-only cinematic key/fill is described separately; no globe drop shadow.',
             'aircraft_type_status':'Aircraft type supplied in trip configuration; assignment requires separate verification.',
         })
     if VARIANT:
@@ -1323,10 +1451,17 @@ def main():
         'photometry':'Diffuse white in direct Sun approximately one; not calibrated radiance. PNGs are review previews only. Global scene exposure and tone mapping happen after compositing.',
         'depth_scale':'Apparent aircraft size is exaggerated laterally. Cycles Z surface offsets use manufacturer metres and the same vertical exaggeration as globe terrain/clouds.',
         'lighting':'Same astronomical Sun vector and physical-altitude Earth eclipse as terrain; pi irradiance gives unit Lambert diffuse white. Earth/sky environment is an explicit low radiance approximation.',
+        'cinematic_aircraft_lighting':'Opt-in aircraft-only key/fill with dated lunar direction when useful, smooth artificial upper-side fallback and twilight fade. Mesh self-shadows retained; scene transport and exposure unchanged. Not physical moonlight.',
         'moon_lighting':'Shared topocentric Moon direction, variable angular diameter and pre-attenuated incoming linear RGB; directional mesh self-shadowing. Enabled samples retain twenty percent of the legacy night-only environment floor, including below the lunar horizon; daytime fill and Sun are unchanged.',
         'environment_updates':'Generated environment pixels and world nodes are explicitly refreshed per pose; persistent Cycles data must not retain an earlier solar state or night floor.',
         'composition':'Consume NPZ linear light/coverage/depth; PNG files are display previews and must never be composited into the HDR scene.',
     })
+    if VARIANT == '737-900er':
+        metadata.update({
+            'geometry_scope': BOEING_737_900ER['geometry_notes'],
+            'engine_option': 'Simplified CFM56-7B family geometry; no installed engine serial number or thrust rating asserted.',
+            'display_envelope': '42.11 m overall nose-to-stabilizer length maps to 12.01 model units and is centered at the sprite anchor; the approximately 40.90 m fuselage ends ahead of the stabilizer.',
+        })
     if ASSET_MODEL is not None:
         for name in ('manufacturer_dimensions','engine_option'):
             metadata.pop(name,None)

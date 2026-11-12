@@ -49,8 +49,6 @@ def project(points, bs, raised=1):
 from astronomy import sun_direction
 
 
-
-
 TEX=np.asarray(Image.open(asset('land_mask')).convert('RGB'))
 TW,TH=TEX.shape[1],TEX.shape[0]
 EARTH_RADIUS=6371000.0
@@ -241,22 +239,6 @@ def globe_radiance(bs,sun,dt,return_depth=False,weather_dt=None):
     return result
 
 
-def globe(bs,sun,dt,return_depth=False,weather_dt=None):
-    """Display preview compatibility; all scene compositing uses globe_radiance."""
-    result=globe_radiance(bs,sun,dt,return_depth=return_depth,weather_dt=weather_dt)
-    layer,depth=result if return_depth else (result,None)
-    image=display_image(layer.radiance)
-    image.putalpha(Image.fromarray(np.rint((1-layer.transmittance[...,0])*255).astype(np.uint8)))
-    return (image,Image.fromarray(depth)) if return_depth else image
-
-
-
-
-
-
-
-
-
 def scene(t):
     """Display scene preview; internal cached backgrounds remain immutable HDR."""
     radiance,clouds,_,_=_scene(float(t))
@@ -306,8 +288,6 @@ def _scene(t,with_aircraft=True):
     radiance.setflags(write=False)
     depth.setflags(write=False)
     return radiance,cloud_result,depth,plane
-
-
 
 
 def _composite_scene(t):

@@ -34,6 +34,34 @@ def arguments(root,**updates):
 
 
 class ChasePreviewTests(unittest.TestCase):
+    def test_aircraft_night_light_rejected_before_bundle_or_bake(self):
+        with tempfile.TemporaryDirectory() as tmp,\
+                patch.object(preview,'validate_bundle') as validate,\
+                patch.object(preview,'prepare_terrain') as terrain,\
+                patch('chase_weather.bake_atlas') as clouds:
+            root=Path(tmp)
+            data=json.loads(EXAMPLE.read_text())
+            data.setdefault('style',{})['aircraft_night_light']=1
+            path=root/'night.json';path.write_text(json.dumps(data))
+            with self.assertRaisesRegex(ValueError,'supported only by the globe renderer'):
+                preview.prepare(arguments(root,trip=path))
+            validate.assert_not_called();terrain.assert_not_called();clouds.assert_not_called()
+            self.assertFalse((root/'work').exists())
+
+    def test_737_chase_preparation_uses_real_dimensional_length(self):
+        from chase_camera import ChaseCamera
+        with tempfile.TemporaryDirectory() as tmp,patch.dict(os.environ,{}),\
+                patch.object(preview,'validate_bundle',return_value=deepcopy(BUNDLE)),\
+                patch.object(preview,'prepare_terrain'),\
+                patch('chase_camera.ChaseCamera',wraps=ChaseCamera) as camera:
+            root=Path(tmp);data=json.loads(EXAMPLE.read_text())
+            data['flights'][0]['aircraft']='737-900er'
+            path=root/'737.json';path.write_text(json.dumps(data))
+            _,job=preview.prepare(arguments(root,trip=path))
+            self.assertEqual(job['aircraft'],'737-900er')
+            self.assertEqual(len(job['frames']),12)
+            self.assertEqual(camera.call_args.args[0].aircraft_length_m,42.11)
+
     def test_actual_portrait_sizes_are_exact_even_nine_by_sixteen(self):
         with tempfile.TemporaryDirectory() as tmp,patch.dict(os.environ,{}),\
                 patch.object(preview,'validate_bundle',return_value=deepcopy(BUNDLE)),\

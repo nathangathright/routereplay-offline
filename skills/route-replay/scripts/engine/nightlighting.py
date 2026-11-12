@@ -12,8 +12,6 @@ import numpy as np
 from PIL import Image
 from scipy.ndimage import map_coordinates
 
-from camera_geometry import distance, focal_length
-
 from runtime import ASSETS
 from citylight_model import activation_components
 from citypopulations import (geographic_fields, regional_populations, population_colors,
@@ -24,27 +22,11 @@ from causal_lights import LampTimeline, build_lamp_timeline
 EMISSION_LUMINANCE = .45
 
 
-def _smoothstep(value):
-    value = np.clip(value, 0, 1)
-    return value * value * (3 - 2 * value)
-
-
 @lru_cache(maxsize=1)
 def light_texture():
     """A single scalar texture, cached once per rendering worker."""
     return np.asarray(Image.open(ASSETS / 'nightlights' /
                      'BlackMarble_2016_gray_8192.png').convert('L'))
-
-
-def city_chromaticity(lon, lat, level=None, fields=None):
-    """Modeled regional lamp mix, normalized to unit linear luminance.
-
-    ``level`` is retained for compatibility but never infers lamp type or CCT.
-    """
-    lon, lat = np.broadcast_arrays(lon, lat)
-    priors = regional_populations(lon, lat, fields)
-    colors = population_colors(lon, lat, priors, fields)
-    return np.sum(priors['shares'][..., :, None] * colors, axis=-2).astype(np.float32)
 
 
 @lru_cache(maxsize=1)
@@ -181,55 +163,3 @@ def city_emission(lon, lat, solar_cosine, solar_rate=-6., *, physical_dt=None, w
     strength = float(TRIP.style.get('city_light_strength', 1.))
     emission[lit] = EMISSION_LUMINANCE * strength * level[lit, None] * radiance
     return emission.reshape(shape + (3,))
-
-
-def exposure_profile(times, bases, radii, suns, *, adaptation_seconds=.75,
-                     sample_size=(90, 160), size=(1080, 1920)):
-    """Precompute one bounded star gain per frame, independent of render order.
-
-    Inputs are film seconds, Nx3x3 (east,north,outward) camera bases, Earth
-    silhouette radii in output pixels, and Nx3 Earth-fixed Sun unit vectors.
-    A low-resolution perspective Earth estimates reflected light occupying the
-    image. A causal one-pole response prevents exposure jumps and label-induced
-    pumping. Returned gains lie in [0.65,1]; the user requested exaggerated,
-    phone-readable stars, so adaptation must not hide them. This is not global
-    HDR exposure.
-    """
-    times = np.asarray(times, dtype=float)
-    bases = np.asarray(bases, dtype=float)
-    radii = np.asarray(radii, dtype=float)
-    suns = np.asarray(suns, dtype=float)
-    n = len(times)
-    if bases.shape != (n, 3, 3) or radii.shape != (n,) or suns.shape != (n, 3):
-        raise ValueError('Exposure arrays must have equal frame counts.')
-    if n == 0:
-        return np.empty(0, dtype=np.float32)
-    if np.any(np.diff(times) < 0) or adaptation_seconds <= 0:
-        raise ValueError('Use ordered film times and a positive adaptation time.')
-    sw, sh = sample_size
-    yy, xx = np.mgrid[:sh, :sw]
-    focal = focal_length(size[0])
-    sx = (((xx.ravel() + .5) / sw) * size[0] - size[0] / 2) / focal
-    sy = (size[1] / 2 - ((yy.ravel() + .5) / sh) * size[1]) / focal
-    local_ray = np.column_stack((sx, sy, -np.ones_like(sx)))
-    local_ray /= np.linalg.norm(local_ray, axis=1)[:, None]
-    target = np.empty(n, dtype=float)
-    for i in range(n):
-        d = distance(float(radii[i]), size[0])
-        b = d * local_ray[:, 2]
-        discriminant = b * b - (d * d - 1)
-        hit = discriminant >= 0
-        ray = local_ray[hit]
-        length = -b[hit] - np.sqrt(discriminant[hit])
-        local_surface = ray * length[:, None] + np.array([0., 0., d])
-        surface = local_surface @ bases[i]
-        solar = np.maximum(0, surface @ suns[i])
-        # Approximate the renderer's diffuse response; include viewport area so
-        # a small distant Earth does not meter like a screen-filling planet.
-        scene_brightness = np.sum(.015 + .9 * np.sqrt(solar)) / len(local_ray)
-        target[i] = .65 + .35 * np.exp(-5.5 * scene_brightness)
-    profile = target.copy()
-    for i in range(1, n):
-        weight = -np.expm1(-(times[i] - times[i-1]) / adaptation_seconds)
-        profile[i] = profile[i-1] + weight * (target[i] - profile[i-1])
-    return np.clip(profile, .65, 1).astype(np.float32)

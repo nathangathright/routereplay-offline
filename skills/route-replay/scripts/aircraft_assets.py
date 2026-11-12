@@ -295,3 +295,62 @@ def validate_aircraft_model(path, metadata):
         if digest.hexdigest() != metadata['sha256']:
             raise ValueError('Aircraft GLB hash differs from its immutable bundle record')
     return result
+
+
+# Original simplified 737NG geometry, sampled from Boeing D6-58325-7 Rev C,
+# section 2.2.8 (PDF page 37). Metres: x lateral, aft distance from nose, z
+# above fuselage centre. Dimensions are anchors; contours are illustrative.
+BOEING_737_900ER = {
+    'name': 'Boeing 737-900ER', 'length_m': 42.11, 'span_m': 35.79,
+    'fuselage_width_m': 3.76, 'fuselage_height_m': 4.01,
+    'fuselage_length_m': 40.90, 'tailplane_span_m': 14.35,
+    'engine_center_offset_m': 4.83, 'engine_lip_aft_nose_m': 14.73,
+    'wingtip': 'Conventional upward blended winglets; no split-scimitar or MAX tips',
+    'leg': None, 'registration': None,
+    'reference': 'https://www.boeing.com/content/dam/boeing/v2/airports/acaps/737NG_REV_C.pdf',
+    'reference_pages': 'D6-58325-7 Rev C, October 2025, section 2.2.8, page 2-16 (PDF page 37)',
+    'detail_sources': ['https://www.aviationpartnersboeing.com/products_737_900er.php',
+                       'https://www.cfmaeroengines.com/cfm56/CFM56-5B-CFM56-7B'],
+    'equipment_evidence': 'User-selected 737-900ER illustration in the manufacturer-documented conventional blended-winglet configuration; not verification of a specific aircraft, registration or actual winglet retrofit.',
+    'geometry_notes': 'Original 737NG three-view illustration, not Airbus-derived or engineering CAD. Overall length, winglet span, body width, stabilizer span and intake station/offset are drawing dimensions. Fuselage end, height, nose, wing sections, dorsal fin and flattened CFM56-7B family nacelle contours are approximate drawing samples. No landing gear; aircraft shown in flight configuration.',
+}
+BOEING_737_PLANFORM = {
+    'wing': [(1.70,16.50,-.65),(4.83,18.45,-.60),(10.,21.05,-.15),
+             (16.60,24.75,.50),(17.05,25.45,.58),
+             (17.05,26.65,.58),(15.80,26.35,.45),
+             (5.55,23.05,-.55),(1.70,23.05,-.65)],
+    'winglet': [(16.60,24.75,.50),(17.05,25.05,.75),
+                (17.40,25.65,1.45),(17.895,26.70,4.05),
+                (17.895,27.58,4.05),(17.35,26.90,1.45),
+                (17.05,26.65,.58)],
+    'tailplane': [(1.05,36.30,.70),(6.55,40.85,1.25),
+                  (7.175,40.85,1.30),(7.175,42.11,1.30),
+                  (1.05,40.05,.70)],
+    # Long dorsal fillet and swept fin, unlike an Airbus sharklet/tail silhouette.
+    'fin': [(0.,31.60,1.90),(0.,35.45,3.35),(0.,39.70,9.65),
+            (0.,41.25,9.65),(0.,39.70,1.35)],
+}
+BOEING_737_BODY = [
+    # aft, half width, half height, section centre height
+    (0.,.012,.015,-.36),(.35,.38,.38,-.30),(1.1,.95,.88,-.20),
+    (2.4,1.53,1.45,-.05),(4.8,1.86,1.98,0.),
+    (7.0,1.88,2.005,0.),(30.3,1.88,2.005,0.),
+    (33.0,1.70,1.84,.10),(36.0,1.15,1.35,.30),
+    (38.7,.54,.70,.65),(40.30,.20,.25,.91),(40.90,.012,.015,1.00),
+]
+
+
+def boeing_737_model_point(point, side=1):
+    """Map dimensioned stations to the centered, 12.01-unit display envelope."""
+    x, aft, z = point
+    unit = BOEING_737_900ER['length_m']/12.01
+    return side*x/unit, 6.005-aft/unit, z/unit
+
+
+# Shared procedural-type registry for trip validation, chase scale, calibration
+# and Blender CLI selection. Keep new types visible to every entry point.
+AIRCRAFT_LENGTHS_M = {
+    'a321neo': 44.51, '777-200er': 63.73, '787-9': 62.81,
+    '757-300': 54.43, '737-900er': BOEING_737_900ER['length_m'],
+}
+SUPPORTED_AIRCRAFT = tuple(AIRCRAFT_LENGTHS_M)

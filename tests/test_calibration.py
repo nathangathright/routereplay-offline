@@ -45,6 +45,21 @@ class CalibrationTests(unittest.TestCase):
             nc.createVariable('longitude','d',('longitude',))[:]=np.linspace(-180,170,36)
             nc.createVariable('z','f',('latitude','longitude'))[:]=100
 
+    def test_737_specific_material_profile_is_accepted_and_reaches_shader(self):
+        value=profile()
+        value['materials']['737-900er']=value['materials'].pop('a321neo')
+        self.assertIs(validate_profile(value),value)
+        self.path.write_text(json.dumps(value))
+        (self.root/'bundle.json').write_text(json.dumps({'calibration':{'path':'calibration.json'}}))
+        inputs={name:NS(default_value=None) for name in ('Base Color','Roughness','Metallic')}
+        mat=NS(diffuse_color=None,node_tree=NS(nodes={'Principled BSDF':NS(inputs=inputs)}))
+        env=dict(os=os,Path=Path,json=json,VARIANT='737-900er',MATERIAL_CALIBRATION={})
+        apply=aircraft_function('apply_material_calibration',env)
+        with patch.dict(os.environ,{'FLIGHT_ASSET_DIR':str(self.root)}):apply({'paint':mat})
+        self.assertEqual(inputs['Base Color'].default_value,(.05,.12,.65,1.))
+        self.assertEqual(inputs['Roughness'].default_value,.65)
+        self.assertEqual(env['MATERIAL_CALIBRATION']['slots']['paint']['basis'],'measured')
+
     def test_evidence_dates_and_uncertainty_are_retained_without_inventing_validity(self):
         loaded=read_profile(self.path);self.assertEqual(loaded,profile())
         summary=profile_summary(loaded);self.assertEqual(summary['max_elevation_m'],234.)

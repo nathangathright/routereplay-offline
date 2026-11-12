@@ -10,11 +10,10 @@ import math
 
 import erfa
 import numpy as np
-from PIL import Image
 
 from camera_geometry import EARTH_M, distance, focal_length, sphere_interval
 from starfield import _time_scales
-from radiometry import TransportLayer, resize_float, tone_map
+from radiometry import TransportLayer, resize_float
 
 AU_KM = 149_597_870.7
 EARTH_KM = EARTH_M / 1000
@@ -141,12 +140,3 @@ def moon_transport(bs, dt, radius, size=(1080, 1920), center=(540, 960)):
     radiance[top:bottom, left:right] = patch
     transmittance[top:bottom, left:right, 0] = 1 - alpha
     return TransportLayer(radiance, transmittance)
-
-
-def moon_layer(bs, dt, radius, size=(1080, 1920), center=(540, 960)):
-    """Display preview adapter; the scene compositor uses moon_transport."""
-    layer = moon_transport(bs, dt, radius, size, center)
-    alpha = 1 - layer.transmittance
-    color = np.divide(layer.radiance, alpha, out=np.zeros_like(layer.radiance), where=alpha > 0)
-    rgba = np.concatenate((tone_map(color), alpha), axis=-1)
-    return Image.fromarray(np.rint(rgba * 255).astype(np.uint8))

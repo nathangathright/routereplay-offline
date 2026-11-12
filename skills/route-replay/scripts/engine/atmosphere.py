@@ -10,7 +10,7 @@ import os
 import numpy as np
 from PIL import Image
 from camera_geometry import pixel_rays, sphere_interval
-from radiometry import TransportLayer, resize_float, linear_to_srgb
+from radiometry import TransportLayer, resize_float
 from quality import get_quality
 from runtime import TRIP
 from solar_visibility import solar_visibility, shadow_boundaries
@@ -279,11 +279,3 @@ def _reconstruct_atmosphere(bs,sun,radius,size,center,depth,*,scale,sensor_width
         opaque[indices],support[indices]=geometry(xy)
     return reconstruct_transport(size,scale,sample,opaque_depth=opaque.reshape(height,width),
         support_mask=support.reshape(height,width),sample_geometry=geometry,mode='adaptive')
-
-
-def atmosphere_layer(*args,**kwargs):
-    """Legacy display-only RGBA approximation; use atmosphere_transport."""
-    layer=atmosphere_transport(*args,**kwargs)
-    alpha=1-np.mean(layer.transmittance,axis=-1,keepdims=True)
-    straight=layer.radiance/np.maximum(alpha,1e-8)
-    return Image.fromarray(np.uint8(np.clip(np.concatenate([linear_to_srgb(straight),alpha],axis=-1)*255,0,255)))
