@@ -70,7 +70,7 @@ class Boeing737Tests(unittest.TestCase):
         self.assertNotIn('chevron_cowl(',ast.unparse(builder))
         # Parsing must retain the user's exact type rather than substituting A321.
         import json
-        example=next((SCRIPTS.parent/'examples').glob('*.json'))
+        example=SCRIPTS.parent/'examples/sample-single-leg.json'
         data=json.loads(example.read_text())
         for flight in data['flights']: flight['aircraft']='737-900er'
         trip=trip_from_dict(data)

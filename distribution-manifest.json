@@ -659,7 +659,7 @@
     {
       "path": "tests/test_boeing_737.py",
       "bytes": 4964,
-      "sha256": "42e84bbe2553b6b7af70bab443a1c951aa7cc11c94502f694dd0697fe87570f8"
+      "sha256": "46d50e0427a46ff21ea6c1f92d009f159d47485b2b1d2c0e54da4783b607e2e8"
     },
     {
       "path": "tests/test_calibration.py",
